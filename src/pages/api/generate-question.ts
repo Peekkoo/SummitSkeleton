@@ -39,10 +39,8 @@ const ai = genkit({
 export const POST: APIRoute = async ({ request }) => {
     const { topic = 'general knowledge' } = await request.json().catch(() => ({}));
     const cleanTopic = String(topic).slice(0, 80) || 'general knowledge';
-    console.log('GEMINI_API_KEY:', import.meta.env.GEMINI_API_KEY);
-    console.log('GOOGLE_API_KEY:', import.meta.env.GOOGLE_API_KEY);
     const apiKey = import.meta.env.GEMINI_API_KEY;
-    const model = import.meta.env.QUESTION_MODEL ?? 'gemma-3-27b-it';
+    const model = import.meta.env.QUESTION_MODEL ?? 'gemini-1.5-flash';
 
     if (!apiKey) {
         return Response.json({ ok: true, source: 'fallback', question: fallbackQuestion(cleanTopic) });

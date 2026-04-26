@@ -28,7 +28,7 @@ const POST = async ({ request }) => {
   console.log("GEMINI_API_KEY:", "AIzaSyCbC04hRMwgtK2nnOMgSOhdr59FkVeuGl4");
   console.log("GOOGLE_API_KEY:", "AIzaSyCbC04hRMwgtK2nnOMgSOhdr59FkVeuGl4");
   const apiKey = "AIzaSyCbC04hRMwgtK2nnOMgSOhdr59FkVeuGl4";
-  const model = "gemma-3-27b-it";
+  const model = "gemini-pro";
   const prompt = [
     "Create one multiple-choice study question.",
     `Topic: ${cleanTopic}`,
