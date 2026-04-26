@@ -1,0 +1,1 @@
+import{s as e,g as r}from"./auth.CugYaEYF.js";function n(){const o=r(),t=document.getElementById("credits-dashboard-action");!t||!o||(t.href="/dashboard",t.textContent="Return to Dashboard")}n();e();document.addEventListener("astro:page-load",n);document.addEventListener("astro:page-load",e);

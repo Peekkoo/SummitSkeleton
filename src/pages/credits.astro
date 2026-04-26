@@ -1,8 +1,74 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import '../styles/credits.css';
 ---
 
 <BaseLayout title="Credits - Summit">
-    <h1>Credits</h1>
-    <p>Credits page content here.</p>
+<main class="credits-shell">
+    <nav class="credits-navigation" aria-label="Credits navigation">
+        <a class="brand" href="/">
+            <h1>Summit</h1>
+        </a>
+        <div class="navigation-actions">
+            <a class="navigation-link" href="/dashboard">Dashboard</a>
+            <a class="navigation-link" href="/leaderboard">Leaderboard</a>
+            <a class="navigation-link" href="/loot-crates">Loot Crates</a>
+            <button class="navigation-link" type="button" data-signout-button>Sign Out</button>
+        </div>
+    </nav>
+
+    <section class="hero-panel" aria-labelledby="credits-title">
+        <span class="eyebrow">Credits</span>
+        <h2 id="credits-title">Built by the Summit team</h2>
+        <p>Summit is a collaborative project shaped by full stack development and design work from the team below.</p>
+    </section>
+
+    <section class="team-grid" aria-label="Team members">
+        <article class="member-card full-stack">
+            <span class="role-label">Full Stack Developer</span>
+            <h3>Ethan Rojas</h3>
+            <p>Frontend and backend development for Summit&apos;s product workflow.</p>
+        </article>
+        <article class="member-card full-stack">
+            <span class="role-label">Full Stack Developer</span>
+            <h3>Kris Nguyen</h3>
+            <p>Full stack development support across account, learning, and reward systems.</p>
+        </article>
+        <article class="member-card full-stack">
+            <span class="role-label">Full Stack Developer</span>
+            <h3>Nicholas Cheng</h3>
+            <p>Full stack development support for Summit&apos;s core app experience.</p>
+        </article>
+        <article class="member-card design">
+            <span class="role-label">Design Member</span>
+            <h3>Nathalia Lam</h3>
+            <p>Design direction and visual planning for the Summit experience.</p>
+        </article>
+    </section>
+
+    <section class="thanks-panel">
+        <p>Thanks to everyone helping Summit become a smoother, more useful learning platform.</p>
+        <a class="primary-action" id="credits-dashboard-action" href="/login">Log In to Dashboard</a>
+    </section>
+</main>
+
+<script>
+    import { getCurrentUser, setupSignOutButtons } from '../scripts/auth.js';
+
+    function updateCreditsAction() {
+        const currentUser = getCurrentUser();
+        const dashboardAction = document.getElementById('credits-dashboard-action') as HTMLAnchorElement;
+        if (!dashboardAction || !currentUser) return;
+        dashboardAction.href = '/dashboard';
+        dashboardAction.textContent = 'Return to Dashboard';
+    }
+
+    updateCreditsAction();
+    setupSignOutButtons();
+    document.addEventListener('astro:page-load', updateCreditsAction);
+    document.addEventListener('astro:page-load', setupSignOutButtons);
+</script>
 </BaseLayout>
+
+
+

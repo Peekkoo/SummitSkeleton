@@ -1,0 +1,299 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import '../styles/knowledge-bites.css';
+---
+
+<BaseLayout title="Knowledge Bites - Summit">
+<main class="bites-shell">
+    <nav class="knowledge-bites-navigation" aria-label="Knowledge Bites navigation">
+        <a class="brand" href="/">
+            <h1>Summit</h1>
+        </a>
+        <div class="navigation-actions">
+            <a class="navigation-link" href="/dashboard">Dashboard</a>
+            <a class="navigation-link" href="/leaderboard">Leaderboard</a>
+            <a class="navigation-link" href="/loot-crates">Loot Crates</a>
+            <a class="navigation-link" href="/credits">Credits</a>
+        </div>
+    </nav>
+
+    <section class="hero-panel" aria-labelledby="bites-title">
+        <div class="hero-copy">
+            <span class="eyebrow">Knowledge Bites</span>
+            <h2 id="bites-title">Study tidbits</h2>
+            <p>Read quick facts, mark them complete, and earn XP. This is the first functional study option using the current local account data.</p>
+            <div class="hero-actions">
+                <a class="primary-action" href="#bite-feed">Start Reading</a>
+                <a class="ghost-action" href="/dashboard">Back to Dashboard</a>
+            </div>
+        </div>
+
+        <aside class="progress-panel" aria-label="Knowledge Bites progress">
+            <span class="panel-label">Bites Progress</span>
+            <strong><span id="completed-count">0</span> / <span id="total-count">0</span></strong>
+            <div class="meter-track" aria-hidden="true">
+                <div class="meter-fill" id="progress-fill"></div>
+            </div>
+            <p id="progress-note">Complete bites to build your daily learning streak.</p>
+        </aside>
+    </section>
+
+    <section class="statistics-grid" aria-label="Account stats">
+        <article class="statistic-card">
+            <span class="statistic-label">XP</span>
+            <strong id="xp-value">--</strong>
+        </article>
+        <article class="statistic-card">
+            <span class="statistic-label">Level</span>
+            <strong id="level-value">--</strong>
+        </article>
+        <article class="statistic-card">
+            <span class="statistic-label">Lessons Done</span>
+            <strong id="lessons-value">--</strong>
+        </article>
+    </section>
+
+    <div class="bites-grid">
+        <section class="feed-panel" aria-labelledby="feed-title">
+            <div class="panel-heading">
+                <div>
+                    <span class="panel-label">Study Reader</span>
+                    <h3 id="feed-title">One bite at a time</h3>
+                </div>
+                <div class="filter-row" aria-label="Filter bites">
+                    <button class="filter-button active" type="button" data-filter="all">All</button>
+                    <button class="filter-button" type="button" data-filter="Study">Study</button>
+                    <button class="filter-button" type="button" data-filter="Life">Life</button>
+                    <button class="filter-button" type="button" data-filter="Mind">Mind</button>
+                </div>
+            </div>
+
+            <div class="bite-reader" id="bite-feed"></div>
+        </section>
+
+        <aside class="focus-stack">
+            <section class="focus-panel">
+                <span class="panel-label">How it works</span>
+                <h3>Read, recall, reward</h3>
+                <p>Each completed bite is saved into your account&apos;s completed lessons list and awards 25 XP one time. You need to stay on the current bite for at least 5 seconds before it can be completed.</p>
+                <ul class="focus-list">
+                    <li>Filter by category.</li>
+                    <li>Read one card at a time.</li>
+                    <li>Mark complete for XP.</li>
+                </ul>
+                <div class="toast" id="toast" aria-live="polite"></div>
+            </section>
+        </aside>
+    </div>
+</main>
+
+<script>
+    import { getCurrentUser, markLessonComplete } from '../scripts/auth.js';
+
+    const XP_REWARD = 25;
+    const bites = [
+        {
+            id: 'bite-focus-20',
+            category: 'Study',
+            title: 'Twenty minutes is enough',
+            text: 'A short focused block beats a long distracted session because attention is easier to protect in a smaller window. Start with 20 minutes and choose one specific thing to finish before the timer ends. When the block is over, take a short reset instead of forcing yourself to keep grinding. This rhythm makes studying feel repeatable instead of overwhelming.',
+        },
+        {
+            id: 'bite-recall',
+            category: 'Study',
+            title: 'Recall beats rereading',
+            text: 'Rereading feels comfortable, but it can trick you into thinking you know something because the answer looks familiar. Try answering from memory before checking your notes. The effort of recall tells your brain that the information matters. After you check the source, correct the answer and try again later.',
+        },
+        {
+            id: 'bite-money',
+            category: 'Life',
+            title: 'Pay yourself first',
+            text: 'Saving is easier when it happens before spending because the money never has to fight for attention. Even a tiny automatic habit can grow into something meaningful over time. Start with an amount small enough that you will not quit after one week. The consistency matters more than the size at the beginning.',
+        },
+        {
+            id: 'bite-sleep',
+            category: 'Mind',
+            title: 'Sleep locks learning in',
+            text: 'Your brain continues organizing information while you sleep. That means rest is part of studying, not a reward you only get after studying. A rested review often works better than late-night cramming because your attention and memory are both sharper. Protecting sleep can make tomorrow&apos;s learning easier before tomorrow even starts.',
+        },
+        {
+            id: 'bite-prioritize',
+            category: 'Life',
+            title: 'Choose the next useful step',
+            text: 'When a project feels huge, your brain may treat it like a foggy threat instead of a sequence of actions. Shrink it to the next visible step, like opening the document, naming the file, or writing the first rough sentence. A small action gives you feedback quickly. Momentum usually follows clarity.',
+        },
+        {
+            id: 'bite-mix',
+            category: 'Study',
+            title: 'Mix topics carefully',
+            text: 'Mixing related topics can improve recognition because it forces you to notice what makes each problem different. This works best after you understand the basics of each topic. Switch between similar problem types and ask why one method fits better than another. The comparison helps build flexible knowledge instead of memorized routines.',
+        },
+        {
+            id: 'bite-breath',
+            category: 'Mind',
+            title: 'A slower breath changes pace',
+            text: 'A few slow breaths can lower urgency and make decisions feel less crowded. This does not solve the whole problem, but it gives your nervous system a better starting point. Try inhaling slowly, pausing briefly, and exhaling longer than you inhaled. Even one minute can create enough space to choose your next move more clearly.',
+        },
+    ];
+
+    const feed = document.getElementById('bite-feed');
+    const completedCount = document.getElementById('completed-count');
+    const totalCount = document.getElementById('total-count');
+    const progressFill = document.getElementById('progress-fill') as HTMLElement;
+    const progressNote = document.getElementById('progress-note');
+    const xpValue = document.getElementById('xp-value');
+    const levelValue = document.getElementById('level-value');
+    const lessonsValue = document.getElementById('lessons-value');
+    const toast = document.getElementById('toast');
+    const filterButtons = Array.from(document.querySelectorAll('.filter-button'));
+    let activeFilter = 'all';
+    let currentIndex = 0;
+    let secondsRemaining = 5;
+    let unlockTimer;
+
+    function getCompleted(user) {
+        return new Set(Array.isArray(user?.completedLessons) ? user.completedLessons : []);
+    }
+
+    function renderUser(user = getCurrentUser()) {
+        if (!user) {
+            window.location.href = '/login';
+            return null;
+        }
+
+        const completed = getCompleted(user);
+        const completeBites = bites.filter((bite) => completed.has(bite.id)).length;
+        const percent = Math.round((completeBites / bites.length) * 100);
+        completedCount.textContent = completeBites.toLocaleString();
+        totalCount.textContent = bites.length.toLocaleString();
+        progressFill.style.width = `${percent}%`;
+        progressNote.textContent = completeBites === bites.length
+            ? 'All bites complete. Nice climb.'
+            : `${bites.length - completeBites} bites left in this set.`;
+        xpValue.textContent = Number(user.xp ?? 0).toLocaleString();
+        levelValue.textContent = Number(user.level ?? 1).toLocaleString();
+        lessonsValue.textContent = Number(user.completedLessons?.length ?? 0).toLocaleString();
+        return user;
+    }
+
+    function showToast(message) {
+        toast.textContent = message;
+        toast.classList.add('show');
+        window.setTimeout(() => toast.classList.remove('show'), 2400);
+    }
+
+    function getVisibleBites() {
+        return activeFilter === 'all'
+            ? bites
+            : bites.filter((bite) => bite.category === activeFilter);
+    }
+
+    function startUnlockTimer() {
+        window.clearInterval(unlockTimer);
+        secondsRemaining = 5;
+        updateTimerLabel();
+        unlockTimer = window.setInterval(() => {
+            secondsRemaining -= 1;
+            updateTimerLabel();
+            if (secondsRemaining <= 0) {
+                window.clearInterval(unlockTimer);
+                const button = document.querySelector('[data-bite-id]') as HTMLButtonElement;
+                if (button && !button.dataset.completed) {
+                    button.disabled = false;
+                    button.textContent = 'Mark Complete';
+                }
+            }
+        }, 1000);
+    }
+
+    function updateTimerLabel() {
+        const timerLabel = document.getElementById('timer-label');
+        const button = document.querySelector('[data-bite-id]') as HTMLButtonElement;
+        if (!timerLabel || !button) return;
+        if (button.dataset.completed) {
+            timerLabel.textContent = 'Completed';
+            return;
+        }
+        timerLabel.textContent = secondsRemaining > 0
+            ? `Complete unlocks in ${secondsRemaining}s`
+            : 'Ready to complete';
+    }
+
+    function renderBites(resetTimer = true) {
+        const user = renderUser();
+        if (!user) return;
+        const completed = getCompleted(user);
+        const visibleBites = getVisibleBites();
+        if (currentIndex >= visibleBites.length) currentIndex = 0;
+        const bite = visibleBites[currentIndex];
+        const isDone = completed.has(bite.id);
+
+        feed.innerHTML = `
+            <article class="bite-card ${isDone ? 'completed' : ''}">
+                <div class="bite-top">
+                    <span class="bite-category">${bite.category}</span>
+                    <span class="bite-reward">${isDone ? 'Completed' : `+${XP_REWARD} XP`}</span>
+                </div>
+                <div>
+                    <h4>${bite.title}</h4>
+                    <p>${bite.text}</p>
+                </div>
+                <div class="bite-actions">
+                    <span class="bite-reward" id="timer-label">${isDone ? 'Completed' : 'Complete unlocks in 5s'}</span>
+                    <button class="complete-button" type="button" data-bite-id="${bite.id}" ${isDone ? 'data-completed="true" disabled' : 'disabled'}>
+                        ${isDone ? 'Completed' : 'Read First'}
+                    </button>
+                </div>
+            </article>
+            <div class="reader-controls">
+                <button class="ghost-action" type="button" id="prev-bite">Previous</button>
+                <span class="reader-status">${currentIndex + 1} of ${visibleBites.length}</span>
+                <button class="ghost-action" type="button" id="next-bite">Next</button>
+            </div>
+        `;
+
+        document.getElementById('prev-bite').addEventListener('click', () => {
+            currentIndex = (currentIndex - 1 + visibleBites.length) % visibleBites.length;
+            renderBites();
+        });
+
+        document.getElementById('next-bite').addEventListener('click', () => {
+            currentIndex = (currentIndex + 1) % visibleBites.length;
+            renderBites();
+        });
+
+        if (isDone) {
+            window.clearInterval(unlockTimer);
+        } else if (resetTimer) {
+            startUnlockTimer();
+        }
+    }
+
+    feed.addEventListener('click', (event) => {
+        const button = event.target.closest('[data-bite-id]');
+        if (!button) return;
+        const biteId = button.getAttribute('data-bite-id');
+        const updatedUser = markLessonComplete(biteId, XP_REWARD);
+        if (!updatedUser) {
+            window.location.href = '/login';
+            return;
+        }
+        renderBites(false);
+        showToast(`Nice. +${XP_REWARD} XP added.`);
+    });
+
+    filterButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+            activeFilter = button.getAttribute('data-filter') ?? 'all';
+            currentIndex = 0;
+            filterButtons.forEach((item) => item.classList.toggle('active', item === button));
+            renderBites();
+        });
+    });
+
+    renderBites();
+</script>
+</BaseLayout>
+
+
+

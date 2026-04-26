@@ -1,0 +1,351 @@
+body {
+    background:
+        linear-gradient(rgba(13, 22, 39, 0.58), rgba(13, 22, 39, 0.86)),
+        url('/assets/images/mountain3.jpg') center/cover fixed;
+    min-height: 100vh;
+}
+
+.bites-shell {
+    width: min(1120px, calc(100% - 2rem));
+    margin: 0 auto;
+    padding: 1.25rem 0 3rem;
+}
+
+.knowledge-bites-navigation {
+    align-items: center;
+    display: flex;
+    gap: 1rem;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+    padding: 0.75rem 0;
+}
+
+.brand {
+    color: var(--light-text-color);
+    text-decoration: none;
+}
+
+.brand h1 {
+    color: var(--accent-color);
+    font-family: var(--title-font);
+    font-size: clamp(2rem, 5vw, 3rem);
+    line-height: 1;
+}
+
+.navigation-actions,
+.hero-actions,
+.filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.navigation-actions {
+    justify-content: flex-end;
+}
+
+.navigation-link,
+.primary-action,
+.ghost-action,
+.filter-button,
+.complete-button {
+    align-items: center;
+    border: 1px solid rgba(255,255,255,0.18);
+    border-radius: 8px;
+    color: var(--light-text-color);
+    cursor: pointer;
+    display: inline-flex;
+    font: inherit;
+    font-weight: 700;
+    justify-content: center;
+    line-height: 1;
+    text-decoration: none;
+    transition: transform 0.2s, background 0.2s, box-shadow 0.2s;
+}
+
+.navigation-link,
+.ghost-action,
+.filter-button {
+    background: rgba(255,255,255,0.12);
+}
+
+.navigation-link,
+.filter-button {
+    padding: 0.7rem 1rem;
+}
+
+.primary-action,
+.complete-button,
+.filter-button.active {
+    background: var(--accent-color);
+    border-color: rgba(92,198,224,0.65);
+    color: white;
+}
+
+.primary-action,
+.ghost-action,
+.complete-button {
+    padding: 0.85rem 1.1rem;
+}
+
+.navigation-link:hover,
+.primary-action:hover,
+.ghost-action:hover,
+.filter-button:hover,
+.complete-button:hover {
+    box-shadow: 0 8px 24px rgba(0,0,0,0.22);
+    transform: translateY(-2px);
+}
+
+.hero-panel,
+.statistic-card,
+.feed-panel,
+.bite-card,
+.focus-panel {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.16);
+    box-shadow: 0 18px 55px rgba(0,0,0,0.24);
+    backdrop-filter: blur(18px);
+}
+
+.hero-panel {
+    border-radius: 8px;
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
+    margin-bottom: 1.5rem;
+    padding: clamp(1.25rem, 4vw, 2.25rem);
+}
+
+.eyebrow,
+.panel-label,
+.statistic-label,
+.bite-category,
+.bite-reward {
+    color: rgba(240,229,216,0.72);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.hero-copy h2 {
+    color: var(--light-text-color);
+    font-family: var(--header-font);
+    font-size: clamp(2.4rem, 6vw, 4.4rem);
+    font-weight: 400;
+    line-height: 1;
+    margin: 0.35rem 0 0.85rem;
+}
+
+.hero-copy p,
+.bite-card p,
+.focus-panel p {
+    color: rgba(240,229,216,0.82);
+}
+
+.progress-panel {
+    align-self: stretch;
+    background: rgba(0,0,0,0.22);
+    border-radius: 8px;
+    display: grid;
+    gap: 1rem;
+    padding: 1rem;
+}
+
+.progress-panel strong,
+.statistic-card strong {
+    color: white;
+    display: block;
+    font-family: var(--header-font);
+    font-size: clamp(1.7rem, 5vw, 2.6rem);
+    font-weight: 400;
+    line-height: 1;
+}
+
+.meter-track {
+    background: rgba(255,255,255,0.14);
+    border-radius: 999px;
+    height: 14px;
+    overflow: hidden;
+}
+
+.meter-fill {
+    background: linear-gradient(90deg, var(--accent-color), #f0e5d8);
+    border-radius: inherit;
+    height: 100%;
+    width: 0%;
+}
+
+.statistics-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin-bottom: 1.5rem;
+}
+
+.statistic-card {
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.bites-grid {
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: minmax(0, 1fr) 320px;
+}
+
+.feed-panel,
+.focus-panel {
+    border-radius: 8px;
+    padding: 1.25rem;
+}
+
+.panel-heading {
+    align-items: start;
+    display: flex;
+    gap: 1rem;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.panel-heading h3,
+.focus-panel h3,
+.bite-card h4 {
+    color: white;
+    font-family: var(--header-font);
+    font-weight: 400;
+    line-height: 1.1;
+}
+
+.panel-heading h3,
+.focus-panel h3 {
+    font-size: 1.7rem;
+}
+
+.bite-reader {
+    display: grid;
+    gap: 1rem;
+}
+
+.bite-card {
+    border-radius: 8px;
+    display: grid;
+    gap: 1rem;
+    min-height: 360px;
+    padding: clamp(1.25rem, 4vw, 2rem);
+}
+
+.bite-card.completed {
+    background: rgba(92,198,224,0.18);
+    border-color: rgba(92,198,224,0.48);
+}
+
+.bite-card h4 {
+    font-size: clamp(1.7rem, 4vw, 2.35rem);
+}
+
+.bite-card p {
+    font-size: 1.05rem;
+    line-height: 1.75;
+    margin-top: 0.75rem;
+}
+
+.bite-top,
+.bite-actions {
+    align-items: center;
+    display: flex;
+    gap: 0.75rem;
+    justify-content: space-between;
+}
+
+.reader-controls {
+    align-items: center;
+    display: flex;
+    gap: 0.75rem;
+    justify-content: space-between;
+}
+
+.reader-status {
+    color: rgba(240,229,216,0.78);
+    font-weight: 700;
+    text-align: center;
+}
+
+.complete-button:disabled {
+    cursor: default;
+    opacity: 0.7;
+    transform: none;
+}
+
+.focus-stack {
+    display: grid;
+    gap: 1rem;
+}
+
+.focus-panel {
+    align-self: start;
+}
+
+.focus-list {
+    color: rgba(240,229,216,0.82);
+    margin: 0.75rem 0 0;
+    padding-left: 1.25rem;
+}
+
+.toast {
+    background: rgba(92,198,224,0.18);
+    border: 1px solid rgba(92,198,224,0.45);
+    border-radius: 8px;
+    color: white;
+    display: none;
+    font-weight: 700;
+    margin-top: 1rem;
+    padding: 0.85rem;
+}
+
+.toast.show {
+    display: block;
+}
+
+.hidden {
+    display: none;
+}
+
+@media (max-width: 880px) {
+    .knowledge-bites-navigation,
+    .panel-heading,
+    .bite-top,
+    .bite-actions,
+    .reader-controls {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .navigation-actions {
+        justify-content: flex-start;
+    }
+
+    .hero-panel,
+    .bites-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 560px) {
+    .bites-shell {
+        width: min(100% - 1rem, 1120px);
+        padding-top: 0.75rem;
+    }
+
+    .navigation-actions,
+    .hero-actions,
+    .filter-row,
+    .statistics-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        width: 100%;
+    }
+}
+
+

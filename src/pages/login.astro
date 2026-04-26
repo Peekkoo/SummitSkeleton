@@ -1,8 +1,142 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import '../styles/login.css';
 ---
 
 <BaseLayout title="Login - Summit">
-    <h1>Login</h1>
-    <p>Login page content here.</p>
+<div class="authentication-card">
+    <div class="logo">
+        <h1>Summit</h1>
+        <p>Reach your peak</p>
+    </div>
+
+    <div class="tabs">
+        <button class="tab-button active" id="tab-login" type="button">Log In</button>
+        <button class="tab-button" id="tab-signup" type="button">Sign Up</button>
+    </div>
+
+    <div id="error-box" class="error-message"></div>
+
+    <form id="login-form">
+        <div class="form-group">
+            <label>Username</label>
+            <input type="text" id="login-username" placeholder="Your username" required autocomplete="username">
+        </div>
+        <div class="form-group">
+            <label>Password</label>
+            <input type="password" id="login-password" placeholder="Your password" required autocomplete="current-password">
+        </div>
+        <button type="submit" class="submit-button">Log In</button>
+    </form>
+
+    <form id="signup-form" class="hidden">
+        <div class="form-group">
+            <label>Username</label>
+            <input type="text" id="signup-username" placeholder="Choose a username" required>
+        </div>
+        <div class="form-group">
+            <label>Email</label>
+            <input type="email" id="signup-email" placeholder="your@email.com" required>
+        </div>
+        <div class="form-group">
+            <label>Password</label>
+            <input type="password" id="signup-password" placeholder="Choose a password" required>
+        </div>
+        <div class="form-group">
+            <label>Confirm Password</label>
+            <input type="password" id="signup-confirm" placeholder="Repeat your password" required>
+        </div>
+        <button type="submit" class="submit-button">Create Account</button>
+    </form>
+
+    <div class="back-link">
+        <a href="/">Back to home</a>
+    </div>
+</div>
+
+<script>
+    import { getCurrentUser, login, signup } from '../scripts/auth.js';
+
+    function getPage() {
+        return {
+            loginForm: document.getElementById('login-form') as HTMLFormElement,
+            signupForm: document.getElementById('signup-form') as HTMLFormElement,
+            tabLogin: document.getElementById('tab-login') as HTMLButtonElement,
+            tabSignup: document.getElementById('tab-signup') as HTMLButtonElement,
+            errorBox: document.getElementById('error-box') as HTMLDivElement,
+        };
+    }
+
+    function showTab(tab: string): void {
+        const { loginForm, signupForm, tabLogin, tabSignup, errorBox } = getPage();
+        if (!loginForm || !signupForm || !tabLogin || !tabSignup || !errorBox) return;
+        const isLogin = tab === 'login';
+        loginForm.classList.toggle('hidden', !isLogin);
+        signupForm.classList.toggle('hidden', isLogin);
+        tabLogin.classList.toggle('active', isLogin);
+        tabSignup.classList.toggle('active', !isLogin);
+        errorBox.classList.remove('show');
+    }
+
+    function showError(message: string): void {
+        const { errorBox } = getPage();
+        if (!errorBox) return;
+        errorBox.textContent = message;
+        errorBox.classList.add('show');
+    }
+
+    function bindLoginPage(): void {
+        const { loginForm, signupForm, tabLogin, tabSignup } = getPage();
+        if (!loginForm || !signupForm || !tabLogin || !tabSignup) return;
+        const params = new URLSearchParams(window.location.search);
+
+        if (getCurrentUser() && params.get('mode') !== 'signup') {
+            window.location.href = '/dashboard';
+            return;
+        }
+
+        showTab(params.get('mode') === 'signup' ? 'signup' : 'login');
+
+        if (tabLogin.dataset.ready !== 'true') {
+            tabLogin.dataset.ready = 'true';
+            tabLogin.addEventListener('click', () => showTab('login'));
+        }
+
+        if (tabSignup.dataset.ready !== 'true') {
+            tabSignup.dataset.ready = 'true';
+            tabSignup.addEventListener('click', () => showTab('signup'));
+        }
+
+        if (loginForm.dataset.ready !== 'true') {
+            loginForm.dataset.ready = 'true';
+            loginForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const username = (document.getElementById('login-username') as HTMLInputElement).value.trim();
+                const password = (document.getElementById('login-password') as HTMLInputElement).value;
+                const result = login(username, password);
+                if (!result.ok) return showError(result.error ?? 'Login failed');
+                window.location.href = '/dashboard';
+            });
+        }
+
+        if (signupForm.dataset.ready !== 'true') {
+            signupForm.dataset.ready = 'true';
+            signupForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const username = (document.getElementById('signup-username') as HTMLInputElement).value.trim();
+                const email = (document.getElementById('signup-email') as HTMLInputElement).value.trim();
+                const password = (document.getElementById('signup-password') as HTMLInputElement).value;
+                const confirm = (document.getElementById('signup-confirm') as HTMLInputElement).value;
+                if (password !== confirm) return showError('Passwords do not match');
+                if (password.length < 4) return showError('Password must be at least 4 characters');
+                const result = signup(username, email, password);
+                if (!result.ok) return showError(result.error ?? 'Signup failed');
+                window.location.href = '/dashboard';
+            });
+        }
+    }
+
+    bindLoginPage();
+    document.addEventListener('astro:page-load', bindLoginPage);
+</script>
 </BaseLayout>

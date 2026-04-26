@@ -1,0 +1,368 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import '../styles/knowledge.css';
+---
+
+<BaseLayout title="Knowledge - Summit">
+<main class="knowledge-shell">
+    <nav class="knowledge-navigation" aria-label="Knowledge navigation">
+        <a class="brand" href="/">
+            <h1>Summit</h1>
+        </a>
+        <div class="navigation-actions">
+            <a class="navigation-link" href="/dashboard">Dashboard</a>
+            <a class="navigation-link" href="/knowledge-bites">Knowledge Bites</a>
+            <a class="navigation-link" href="/leaderboard">Leaderboard</a>
+            <a class="navigation-link" href="/loot-crates">Loot Crates</a>
+        </div>
+    </nav>
+
+    <section class="hero-panel" aria-labelledby="knowledge-title">
+        <div class="hero-copy">
+            <span class="eyebrow">Knowledge</span>
+            <h2 id="knowledge-title">Choose a topic and train</h2>
+            <p>Pick what you want to study. Questions can be preloaded or generated, and answer order changes each time.</p>
+            <div class="hero-actions">
+                <a class="primary-action" href="#topic-selection">Pick Topic</a>
+                <a class="ghost-action" href="/dashboard">Back to Dashboard</a>
+            </div>
+        </div>
+
+        <aside class="progress-panel" aria-label="Knowledge progress">
+            <span class="panel-label">Current Topic</span>
+            <strong id="current-topic-name">None</strong>
+            <div class="meter-track" aria-hidden="true">
+                <div class="meter-fill" id="topic-progress-fill"></div>
+            </div>
+            <p id="topic-progress-note">Select a topic to begin.</p>
+        </aside>
+    </section>
+
+    <section class="statistics-grid" aria-label="Account knowledge stats">
+        <article class="statistic-card">
+            <span class="statistic-label">XP</span>
+            <strong id="xp-value">--</strong>
+        </article>
+        <article class="statistic-card">
+            <span class="statistic-label">Credits</span>
+            <strong id="credits-value">--</strong>
+        </article>
+        <article class="statistic-card">
+            <span class="statistic-label">Level</span>
+            <strong id="level-value">--</strong>
+        </article>
+    </section>
+
+    <div class="knowledge-grid">
+        <section class="study-panel" id="topic-selection" aria-labelledby="topic-selection-title">
+            <div class="panel-heading">
+                <div>
+                    <span class="panel-label">Topics</span>
+                    <h3 id="topic-selection-title">What do you want to study?</h3>
+                </div>
+                <span class="reward-label">+20 XP and +5 credits per new correct answer</span>
+            </div>
+
+            <div class="topic-grid" id="topic-grid"></div>
+
+            <section class="question-panel" aria-live="polite">
+                <span class="topic-metadata" id="question-metadata">Select a topic</span>
+                <h3 id="question-title">Ready when you are.</h3>
+                <p id="question-copy">Choose a topic above to load your first adaptive question.</p>
+                <div class="answer-grid" id="answer-grid"></div>
+                <div class="question-actions">
+                    <button class="ghost-action" type="button" id="skip-question">Skip Question</button>
+                    <button class="ghost-action" type="button" id="generate-question">Generate Question</button>
+                    <button class="primary-action" type="button" id="next-question">Next Question</button>
+                </div>
+            </section>
+        </section>
+
+        <aside class="topic-summary-stack" aria-label="Topic summaries">
+            <section class="feedback-panel" id="feedback-panel">
+                <span class="panel-label">Result</span>
+                <h3 id="feedback-title">Answer a question</h3>
+                <p id="feedback-copy">Feedback will appear here.</p>
+            </section>
+            <div id="topic-summary-list"></div>
+        </aside>
+    </div>
+</main>
+
+<script>
+    import { knowledgeTopics } from '../scripts/knowledge-data.js';
+    import { getCurrentUser, recordKnowledgeAnswer } from '../scripts/auth.js';
+
+    const topics = knowledgeTopics;
+    let selectedTopicId = topics[0].id;
+    let currentQuestion = null;
+
+    function getPage() {
+        return {
+            topicGrid: document.getElementById('topic-grid'),
+            topicSummaryList: document.getElementById('topic-summary-list'),
+            currentTopicName: document.getElementById('current-topic-name'),
+            topicProgressFill: document.getElementById('topic-progress-fill') as HTMLElement,
+            topicProgressNote: document.getElementById('topic-progress-note'),
+            questionMetadata: document.getElementById('question-metadata'),
+            questionTitle: document.getElementById('question-title'),
+            questionCopy: document.getElementById('question-copy'),
+            answerGrid: document.getElementById('answer-grid'),
+            feedbackPanel: document.getElementById('feedback-panel'),
+            feedbackTitle: document.getElementById('feedback-title'),
+            feedbackCopy: document.getElementById('feedback-copy'),
+            skipQuestion: document.getElementById('skip-question') as HTMLButtonElement,
+            generateQuestion: document.getElementById('generate-question') as HTMLButtonElement,
+            nextQuestion: document.getElementById('next-question') as HTMLButtonElement,
+            xpValue: document.getElementById('xp-value'),
+            creditsValue: document.getElementById('credits-value'),
+            levelValue: document.getElementById('level-value'),
+        };
+    }
+
+    function getTopicProgress(user, topicId) {
+        return user?.knowledgeProgress?.topics?.[topicId] || { attempts: 0, correctAnswers: 0, completedQuestions: [] };
+    }
+
+    function getQuestionProgress(user, questionId) {
+        return user?.knowledgeProgress?.questions?.[questionId] || { attempts: 0, correct: false, incorrectCount: 0 };
+    }
+
+    function shuffle(items) {
+        const shuffled = [...items];
+        for (let i = shuffled.length - 1; i > 0; i -= 1) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        return shuffled;
+    }
+
+    function prepareQuestion(question) {
+        const correctAnswer = question.answers[question.correctIndex];
+        const answers = shuffle(question.answers);
+        return {
+            ...question,
+            answers,
+            correctIndex: answers.findIndex((answer) => answer === correctAnswer),
+        };
+    }
+
+    function renderAccount(user = getCurrentUser()) {
+        const page = getPage();
+        if (!user) {
+            window.location.href = '/login';
+            return null;
+        }
+        page.xpValue.textContent = Number(user.xp ?? 0).toLocaleString();
+        page.creditsValue.textContent = Number(user.credits ?? 0).toLocaleString();
+        page.levelValue.textContent = Number(user.level ?? 1).toLocaleString();
+        return user;
+    }
+
+    function renderTopics() {
+        const page = getPage();
+        if (!page.topicGrid || !page.topicSummaryList) return;
+        const user = renderAccount();
+        if (!user) return;
+
+        page.topicGrid.innerHTML = topics.map((topic) => {
+            const progress = getTopicProgress(user, topic.id);
+            const completed = progress.completedQuestions?.length ?? 0;
+            return `
+                <button class="topic-button ${topic.id === selectedTopicId ? 'active' : ''}" type="button" data-topic-id="${topic.id}">
+                    <span class="topic-metadata">${completed} / ${topic.questions.length} complete</span>
+                    <strong>${topic.name}</strong>
+                    <span>${topic.description}</span>
+                </button>
+            `;
+        }).join('');
+
+        page.topicSummaryList.innerHTML = topics.map((topic) => {
+            const progress = getTopicProgress(user, topic.id);
+            const completed = progress.completedQuestions?.length ?? 0;
+            return `
+                <article class="topic-summary-card">
+                    <span class="topic-metadata">${topic.name}</span>
+                    <h4>${completed} of ${topic.questions.length} correct</h4>
+                    <p>${progress.attempts ?? 0} attempts recorded.</p>
+                </article>
+            `;
+        }).join('');
+    }
+
+    function chooseAdaptiveQuestion(topic, user) {
+        const unanswered = topic.questions.filter((question) => !getQuestionProgress(user, question.id).attempts);
+        if (unanswered.length) return unanswered[0];
+
+        const missed = topic.questions
+            .filter((question) => !getQuestionProgress(user, question.id).correct)
+            .sort((a, b) => getQuestionProgress(user, b.id).incorrectCount - getQuestionProgress(user, a.id).incorrectCount);
+        if (missed.length) return missed[0];
+
+        return [...topic.questions].sort((a, b) => getQuestionProgress(user, a.id).attempts - getQuestionProgress(user, b.id).attempts)[0];
+    }
+
+    function renderCurrentTopic() {
+        const page = getPage();
+        if (!page.questionTitle) return;
+        const user = renderAccount();
+        if (!user) return;
+        const topic = topics.find((item) => item.id === selectedTopicId) ?? topics[0];
+        const progress = getTopicProgress(user, topic.id);
+        const completed = progress.completedQuestions?.length ?? 0;
+        const percent = Math.round((completed / topic.questions.length) * 100);
+
+        page.currentTopicName.textContent = topic.name;
+        page.topicProgressFill.style.width = `${percent}%`;
+        page.topicProgressNote.textContent = `${completed} of ${topic.questions.length} questions answered correctly.`;
+
+        currentQuestion = prepareQuestion(chooseAdaptiveQuestion(topic, user));
+        page.questionMetadata.textContent = `${topic.name} adaptive question`;
+        page.questionTitle.textContent = currentQuestion.prompt;
+        page.questionCopy.textContent = currentQuestion.detail;
+        page.feedbackPanel.classList.remove('show', 'correct', 'incorrect');
+        renderAnswers(false);
+    }
+
+    function renderAnswers(showResult, selectedIndex = null) {
+        const page = getPage();
+        if (!page.answerGrid || !currentQuestion) return;
+        page.answerGrid.innerHTML = currentQuestion.answers.map((answer, index) => {
+            const isCorrect = index === currentQuestion.correctIndex;
+            const isSelected = index === selectedIndex;
+            const stateClass = showResult && isCorrect ? 'correct' : showResult && isSelected ? 'incorrect' : '';
+            return `
+                <button class="answer-button ${stateClass}" type="button" data-answer-index="${index}" ${showResult ? 'disabled' : ''}>
+                    ${answer}
+                </button>
+            `;
+        }).join('');
+    }
+
+    function normalizeGeneratedQuestion(topic, generated) {
+        const answers = [generated.correctAnswer, ...generated.distractors.slice(0, 3)];
+        return prepareQuestion({
+            id: `generated-${topic.id}-${Date.now()}`,
+            prompt: generated.prompt,
+            detail: generated.detail,
+            answers,
+            correctIndex: 0,
+            explanation: generated.explanation,
+        });
+    }
+
+    async function loadGeneratedQuestion() {
+        const page = getPage();
+        const user = renderAccount();
+        if (!user) return;
+        const topic = topics.find((item) => item.id === selectedTopicId) ?? topics[0];
+        page.generateQuestion.disabled = true;
+        page.questionMetadata.textContent = `${topic.name} generated question`;
+        page.questionTitle.textContent = 'Generating question...';
+        page.questionCopy.textContent = 'Building a new multiple-choice question for this topic.';
+        page.answerGrid.innerHTML = '';
+        page.feedbackPanel.classList.remove('show', 'correct', 'incorrect');
+
+        try {
+            const response = await fetch('/api/generate-question', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ topic: topic.name }),
+            });
+            const data = await response.json();
+            currentQuestion = normalizeGeneratedQuestion(topic, data.question);
+            page.questionMetadata.textContent = `${topic.name} ${data.source === 'api' ? 'generated' : 'practice'} question`;
+            page.questionTitle.textContent = currentQuestion.prompt;
+            page.questionCopy.textContent = currentQuestion.detail;
+            renderAnswers(false);
+        } catch {
+            currentQuestion = normalizeGeneratedQuestion(topic, {
+                prompt: `Which strategy helps you study ${topic.name}?`,
+                detail: 'Think about active practice and feedback.',
+                correctAnswer: 'Try answering first, then review the explanation',
+                distractors: ['Avoid all practice questions', 'Only guess without checking', 'Ignore mistakes'],
+                explanation: 'Practice plus feedback helps you notice gaps and remember the idea more strongly.',
+            });
+            page.questionMetadata.textContent = `${topic.name} practice question`;
+            page.questionTitle.textContent = currentQuestion.prompt;
+            page.questionCopy.textContent = currentQuestion.detail;
+            renderAnswers(false);
+        } finally {
+            page.generateQuestion.disabled = false;
+        }
+    }
+
+    function bindKnowledgePage() {
+        const page = getPage();
+        if (!page.topicGrid || !page.answerGrid || !page.skipQuestion || !page.generateQuestion || !page.nextQuestion) return;
+
+        if (page.topicGrid.dataset.ready !== 'true') {
+            page.topicGrid.dataset.ready = 'true';
+            page.topicGrid.addEventListener('click', (event) => {
+        const button = event.target.closest('[data-topic-id]');
+        if (!button) return;
+        selectedTopicId = button.getAttribute('data-topic-id');
+        renderTopics();
+        renderCurrentTopic();
+            });
+        }
+
+        if (page.answerGrid.dataset.ready !== 'true') {
+            page.answerGrid.dataset.ready = 'true';
+            page.answerGrid.addEventListener('click', (event) => {
+        const button = event.target.closest('[data-answer-index]');
+        if (!button || !currentQuestion) return;
+        const answerIndex = Number(button.getAttribute('data-answer-index'));
+        const topic = topics.find((item) => item.id === selectedTopicId) ?? topics[0];
+        const isCorrect = answerIndex === currentQuestion.correctIndex;
+        const result = recordKnowledgeAnswer(currentQuestion.id, topic.id, isCorrect);
+        if (!result.ok) {
+            window.location.href = '/login';
+            return;
+        }
+
+        renderAnswers(true, answerIndex);
+        renderAccount(result.user);
+        renderTopics();
+        page.feedbackPanel.classList.add('show', isCorrect ? 'correct' : 'incorrect');
+        page.feedbackPanel.classList.remove(isCorrect ? 'incorrect' : 'correct');
+        page.feedbackTitle.textContent = isCorrect ? 'Correct' : 'Try that one again soon';
+        page.feedbackCopy.textContent = isCorrect
+            ? `${currentQuestion.explanation} +${result.awardedXp} XP and +${result.awardedCredits} credits.`
+            : currentQuestion.explanation;
+        renderCurrentTopicProgressOnly(result.user, topic);
+            });
+        }
+
+        if (page.skipQuestion.dataset.ready !== 'true') {
+            page.skipQuestion.dataset.ready = 'true';
+            page.skipQuestion.addEventListener('click', () => renderCurrentTopic());
+        }
+
+        if (page.generateQuestion.dataset.ready !== 'true') {
+            page.generateQuestion.dataset.ready = 'true';
+            page.generateQuestion.addEventListener('click', () => loadGeneratedQuestion());
+        }
+
+        if (page.nextQuestion.dataset.ready !== 'true') {
+            page.nextQuestion.dataset.ready = 'true';
+            page.nextQuestion.addEventListener('click', () => renderCurrentTopic());
+        }
+
+        renderTopics();
+        renderCurrentTopic();
+    }
+
+    function renderCurrentTopicProgressOnly(user, topic) {
+        const page = getPage();
+        const progress = getTopicProgress(user, topic.id);
+        const completed = progress.completedQuestions?.length ?? 0;
+        const percent = Math.round((completed / topic.questions.length) * 100);
+        page.topicProgressFill.style.width = `${percent}%`;
+        page.topicProgressNote.textContent = `${completed} of ${topic.questions.length} questions answered correctly.`;
+    }
+
+    bindKnowledgePage();
+    document.addEventListener('astro:page-load', bindKnowledgePage);
+</script>
+</BaseLayout>

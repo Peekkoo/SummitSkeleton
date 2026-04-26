@@ -1,0 +1,23 @@
+import { c as createComponent } from './astro-component_CUOiN2P0.mjs';
+import 'piccolore';
+import { h as renderComponent, r as renderTemplate, m as maybeRenderHead } from './server_BGf-YlLC.mjs';
+import { r as renderScript } from './script_BnJ6I5_9.mjs';
+import { $ as $$BaseLayout } from './BaseLayout_CJnrWWs0.mjs';
+
+const $$LootCrates = createComponent(($$result, $$props, $$slots) => {
+  return renderTemplate`${renderComponent($$result, "BaseLayout", $$BaseLayout, { "title": "Loot Crates - Summit" }, { "default": ($$result2) => renderTemplate` ${maybeRenderHead()}<main class="crates-shell"> <nav class="loot-crates-navigation" aria-label="Loot crates navigation"> <a class="brand" href="/"> <h1>Summit</h1> </a> <div class="navigation-actions"> <a class="navigation-link" href="/dashboard">Dashboard</a> <a class="navigation-link" href="/leaderboard">Leaderboard</a> <a class="navigation-link" href="/credits">Credits</a> </div> </nav> <section class="hero-panel" aria-labelledby="crates-title"> <div class="hero-copy"> <span class="eyebrow">Loot Crates</span> <h2 id="crates-title">Spend credits, open rewards</h2> <p>Use credits earned through Summit to buy loot crates. Open crates for XP boosts, bonus credits, and future reward types.</p> <div class="hero-actions"> <a class="primary-action" href="#crate-shop">Buy Crate</a> <a class="ghost-action" href="/dashboard">Back to Dashboard</a> </div> </div> <aside class="wallet-panel" aria-label="Your wallet"> <span class="panel-label">Your Wallet</span> <div class="wallet-grid"> <div class="wallet-item"> <span class="statistic-label">Credits</span> <strong id="credits-value">0</strong> </div> <div class="wallet-item"> <span class="statistic-label">Crates</span> <strong id="lootbox-value">0</strong> </div> </div> </aside> </section> <section class="statistics-grid" aria-label="Account reward stats"> <article class="statistic-card"> <span class="statistic-label">Level</span> <strong id="level-value">1</strong> </article> <article class="statistic-card"> <span class="statistic-label">XP</span> <strong id="xp-value">0</strong> </article> <article class="statistic-card"> <span class="statistic-label">Streak</span> <strong><span id="streak-value">0</span>d</strong> </article> </section> <div class="crates-grid"> <section class="crate-card" id="crate-shop" aria-labelledby="shop-title"> <div class="crate-visual" id="crate-visual" aria-hidden="true"> <div class="crate-object"> <span class="crate-lid"></span> <span class="crate-body"></span> <span class="crate-band vertical"></span> <span class="crate-band horizontal"></span> <span class="crate-lock">$</span> <span class="crate-spark one"></span> <span class="crate-spark two"></span> <span class="crate-spark three"></span> <span class="crate-spark four"></span> </div> </div> <span class="crate-metadata">75 credits each</span> <h3 id="shop-title">Summit Supply Crate</h3> <p>Buy one crate for 75 credits, then open it when you are ready. Rewards are saved to the current local account.</p> <div class="crate-actions"> <button class="crate-button" id="buy-crate" type="button">Buy Crate</button> <button class="ghost-action" id="open-crate" type="button">Open Crate</button> </div> <div class="result-panel hidden" id="result-panel" aria-live="polite"> <span class="reward-label">Result</span> <h3 id="result-title">Ready</h3> <p id="result-copy">Buy or open a crate to see what happens.</p> </div> </section> <aside class="result-panel" aria-labelledby="rewards-title"> <span class="panel-label">Possible Rewards</span> <h3 id="rewards-title">What can drop?</h3> <div class="rewards-grid"> <article class="reward-card"> <strong>XP Boosts</strong> <p>+50, +100, or jackpot +200 XP.</p> </article> <article class="reward-card"> <strong>Credit Drops</strong> <p>Earn back +25 or +50 credits.</p> </article> <article class="reward-card"> <strong>More Later</strong> <p>Badges, cosmetics, and study boosts can plug in here later.</p> </article> </div> </aside> </div> </main> ${renderScript($$result2, "C:/Users/ethan/OneDrive/Desktop/SummitSkeleton/src/pages/loot-crates.astro?astro&type=script&index=0&lang.ts")} ` })}`;
+}, "C:/Users/ethan/OneDrive/Desktop/SummitSkeleton/src/pages/loot-crates.astro", void 0);
+
+const $$file = "C:/Users/ethan/OneDrive/Desktop/SummitSkeleton/src/pages/loot-crates.astro";
+const $$url = "/loot-crates";
+
+const _page = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+    __proto__: null,
+    default: $$LootCrates,
+    file: $$file,
+    url: $$url
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const page = () => _page;
+
+export { page };

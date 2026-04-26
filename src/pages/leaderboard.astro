@@ -1,0 +1,209 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import '../styles/leaderboard.css';
+---
+
+<BaseLayout title="Leaderboard - Summit">
+<main class="leaderboard-shell">
+    <nav class="leaderboard-navigation" aria-label="Leaderboard navigation">
+        <a class="brand" href="/">
+            <h1>Summit</h1>
+        </a>
+        <div class="navigation-actions">
+            <a class="navigation-link" href="/dashboard">Dashboard</a>
+            <a class="navigation-link" href="/credits">Credits</a>
+            <button class="navigation-link" type="button" data-signout-button>Sign Out</button>
+        </div>
+    </nav>
+
+    <section class="hero-panel" aria-labelledby="leaderboard-title">
+        <div class="hero-copy">
+            <span class="eyebrow">Leaderboard</span>
+            <h2 id="leaderboard-title">Climb by learning</h2>
+            <p>Every signed-up user in local storage is ranked by level, then XP and streak. This is ready for the backend to replace the data source later.</p>
+            <div class="hero-actions">
+                <a class="primary-action" href="/dashboard#study-paths">Earn XP</a>
+                <a class="navigation-link" href="/dashboard#progress">Track Progress</a>
+            </div>
+        </div>
+
+        <aside class="current-rank" aria-label="Your current rank">
+            <div>
+                <span class="panel-label">Your Rank</span>
+                <strong id="current-rank-value">--</strong>
+            </div>
+            <div class="rank-meter" aria-hidden="true"><span id="current-rank-meter"></span></div>
+            <p id="current-rank-note">Log in or create an account to join the climb.</p>
+        </aside>
+    </section>
+
+    <section class="leaderboard-grid">
+        <div class="leaderboard-panel">
+            <div class="panel-heading">
+                <div>
+                    <span class="panel-label">Top Ten</span>
+                    <h3>Highest Level Climbers</h3>
+                </div>
+                <a class="compact-action" href="/dashboard">Back to Dashboard</a>
+            </div>
+
+            <div class="podium-grid" id="podium-grid" aria-label="Top three users"></div>
+            <div class="rank-list" id="rank-list" aria-label="All ranked users"></div>
+            <div class="empty-state" id="empty-state">
+                <span>No Users Yet</span>
+                <p>Create an account, finish lessons, and the leaderboard will fill in here.</p>
+            </div>
+        </div>
+
+        <aside class="summary-panel" aria-label="Leaderboard summary">
+            <article class="summary-card">
+                <span class="statistic-label">Total Climbers</span>
+                <strong id="total-users">0</strong>
+                <p>Accounts stored in this browser.</p>
+            </article>
+            <article class="summary-card">
+                <span class="statistic-label">Total XP</span>
+                <strong id="total-xp">0</strong>
+                <p>Combined XP from every local user.</p>
+            </article>
+            <article class="summary-card">
+                <span class="statistic-label">Longest Streak</span>
+                <strong><span id="longest-streak">0</span>d</strong>
+                <p>The best active learning streak.</p>
+            </article>
+        </aside>
+    </section>
+</main>
+
+<script>
+    import { getCurrentUser, getUsers, setupSignOutButtons } from '../scripts/auth.js';
+
+    const formatter = new Intl.NumberFormat();
+
+    function joinLabel(joinDate) {
+        if (!joinDate) return 'Summit climber';
+        const date = new Date(joinDate);
+        if (Number.isNaN(date.getTime())) return 'Summit climber';
+        return `Joined ${date.toLocaleDateString(undefined, { month: 'short', year: 'numeric' })}`;
+    }
+
+    function getRankedUsers() {
+        return getUsers()
+            .map((user) => ({
+                username: user.username ?? 'Climber',
+                xp: Number(user.xp ?? 0),
+                level: Number(user.level ?? 1),
+                streak: Number(user.streak ?? 0),
+                credits: Number(user.credits ?? 0),
+                lootboxes: Number(user.lootboxes ?? 0),
+                completedLessons: Array.isArray(user.completedLessons) ? user.completedLessons.length : 0,
+                joinDate: user.joinDate ?? '',
+            }))
+            .sort((a, b) => {
+                if (b.level !== a.level) return b.level - a.level;
+                if (b.xp !== a.xp) return b.xp - a.xp;
+                if (b.streak !== a.streak) return b.streak - a.streak;
+                return a.username.localeCompare(b.username);
+            });
+    }
+
+    function renderPodium(topTenUsers) {
+        const podiumGrid = document.getElementById('podium-grid');
+        podiumGrid.innerHTML = topTenUsers.slice(0, 3).map((user, index) => `
+            <article class="podium-card ${index === 0 ? 'first' : ''}">
+                <span class="rank-label">#${index + 1}</span>
+                <strong>${user.username}</strong>
+                <span>Level ${formatter.format(user.level)} &middot; ${formatter.format(user.streak)}d streak</span>
+                <span>${formatter.format(user.xp)} XP</span>
+            </article>
+        `).join('');
+    }
+
+    function renderRows(topTenUsers, currentUser) {
+        const rankList = document.getElementById('rank-list');
+        rankList.innerHTML = topTenUsers.map((user, index) => {
+            const isCurrent = currentUser?.username === user.username;
+            return `
+                <article class="rank-row ${isCurrent ? 'current-user' : ''}">
+                    <span class="rank-place">${index + 1}</span>
+                    <div class="rank-name">
+                        <strong>${user.username}${isCurrent ? ' &middot; You' : ''}</strong>
+                        <span>${joinLabel(user.joinDate)}</span>
+                    </div>
+                    <div class="rank-statistic">
+                        <strong>${formatter.format(user.level)}</strong>
+                        <span>Level</span>
+                    </div>
+                    <div class="rank-statistic optional">
+                        <strong>${formatter.format(user.streak)}d</strong>
+                        <span>Streak</span>
+                    </div>
+                    <div class="rank-statistic optional">
+                        <strong>${formatter.format(user.xp)}</strong>
+                        <span>XP</span>
+                    </div>
+                    <div class="rank-statistic optional">
+                        <strong>${formatter.format(user.completedLessons)}</strong>
+                        <span>Lessons</span>
+                    </div>
+                </article>
+            `;
+        }).join('');
+    }
+
+    function renderSummary(users) {
+        const totalXp = users.reduce((sum, user) => sum + user.xp, 0);
+        const longestStreak = users.reduce((best, user) => Math.max(best, user.streak), 0);
+        document.getElementById('total-users').textContent = formatter.format(users.length);
+        document.getElementById('total-xp').textContent = formatter.format(totalXp);
+        document.getElementById('longest-streak').textContent = formatter.format(longestStreak);
+    }
+
+    function renderCurrentRank(users, currentUser) {
+        document.getElementById('current-rank-value').textContent = '--';
+        document.getElementById('current-rank-note').textContent = 'Log in or create an account to join the climb.';
+        document.getElementById('current-rank-meter').style.width = '0';
+        if (!currentUser || users.length === 0) return;
+        const index = users.findIndex((user) => user.username === currentUser.username);
+        if (index === -1) return;
+        const rank = index + 1;
+        const current = users[index];
+        const percent = Math.max(8, Math.round(((users.length - index) / users.length) * 100));
+        document.getElementById('current-rank-value').textContent = `#${rank}`;
+        document.getElementById('current-rank-note').textContent = `${current.username}, you have ${formatter.format(current.xp)} XP and a ${formatter.format(current.streak)} day streak.`;
+        document.getElementById('current-rank-meter').style.width = `${percent}%`;
+    }
+
+    function renderLeaderboard() {
+        const currentUser = getCurrentUser();
+        const users = getRankedUsers();
+        const topTenUsers = users.slice(0, 10);
+        const rankList = document.getElementById('rank-list');
+        const podiumGrid = document.getElementById('podium-grid');
+        const emptyState = document.getElementById('empty-state');
+
+        renderSummary(users);
+        renderCurrentRank(users, currentUser);
+
+        if (users.length === 0) {
+            emptyState.classList.add('show');
+            podiumGrid.classList.add('hidden');
+            rankList.classList.add('hidden');
+            podiumGrid.innerHTML = '';
+            rankList.innerHTML = '';
+            return;
+        }
+
+        emptyState.classList.remove('show');
+        podiumGrid.classList.remove('hidden');
+        rankList.classList.remove('hidden');
+        renderPodium(topTenUsers);
+        renderRows(topTenUsers, currentUser);
+    }
+
+    renderLeaderboard();
+    setupSignOutButtons();
+    document.addEventListener('astro:page-load', renderLeaderboard);
+    document.addEventListener('astro:page-load', setupSignOutButtons);
+</script>
+</BaseLayout>
