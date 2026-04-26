@@ -25,6 +25,8 @@ const ai = genkit({
 const POST = async ({ request }) => {
   const { topic = "general knowledge" } = await request.json().catch(() => ({}));
   const cleanTopic = String(topic).slice(0, 80) || "general knowledge";
+  console.log("GEMINI_API_KEY:", "AIzaSyCbC04hRMwgtK2nnOMgSOhdr59FkVeuGl4");
+  console.log("GOOGLE_API_KEY:", "AIzaSyCbC04hRMwgtK2nnOMgSOhdr59FkVeuGl4");
   const apiKey = "AIzaSyCbC04hRMwgtK2nnOMgSOhdr59FkVeuGl4";
   const model = "gemma-3-27b-it";
   const prompt = [
@@ -52,7 +54,8 @@ const POST = async ({ request }) => {
       source: question ? "api" : "fallback",
       question: question ?? fallbackQuestion(cleanTopic)
     });
-  } catch {
+  } catch (err) {
+    console.error("AI question generation failed:", err);
     return Response.json({ ok: true, source: "fallback", question: fallbackQuestion(cleanTopic) });
   }
 };

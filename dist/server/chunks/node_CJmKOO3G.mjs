@@ -1,7 +1,7 @@
 import { joinPaths, isRemotePath, removeQueryString, isParentDirectory } from '@astrojs/internal-helpers/path';
 import { isRemoteAllowed } from '@astrojs/internal-helpers/remote';
-import { A as AstroError, N as NoImageMetadata, F as FailedToFetchRemoteImageDimensions, R as RemoteImageNotAllowed, E as ExpectedImage, L as LocalImageUsedWrongly, M as MissingImageDimension, U as UnsupportedImageFormat, I as IncompatibleDescriptorOptions, a as UnsupportedImageConversion, b as InvalidImageService, c as ExpectedImageOptions, d as ExpectedNotESMImage, e as ImageMissingAlt, m as maybeRenderHead, f as addAttribute, s as spreadAttributes, r as renderTemplate, g as FontFamilyNotFound, u as unescapeHTML } from './server_BGf-YlLC.mjs';
-import { c as createComponent } from './astro-component_CUOiN2P0.mjs';
+import { A as AstroError, N as NoImageMetadata, F as FailedToFetchRemoteImageDimensions, R as RemoteImageNotAllowed, E as ExpectedImage, L as LocalImageUsedWrongly, M as MissingImageDimension, U as UnsupportedImageFormat, I as IncompatibleDescriptorOptions, a as UnsupportedImageConversion, b as InvalidImageService, c as ExpectedImageOptions, d as ExpectedNotESMImage, e as ImageMissingAlt, m as maybeRenderHead, f as addAttribute, s as spreadAttributes, r as renderTemplate, g as FontFamilyNotFound, u as unescapeHTML } from './server_DpPMz5wm.mjs';
+import { c as createComponent } from './astro-component_OwZIJkH1.mjs';
 import 'clsx';
 import * as mime from 'mrmime';
 import 'piccolore';
@@ -1462,7 +1462,7 @@ async function getConfiguredImageService() {
   if (!globalThis?.astroAsset?.imageService) {
     const { default: service } = await import(
       // @ts-expect-error
-      './sharp_B2MtLUML.mjs'
+      './sharp_DhAAMSTi.mjs'
     ).catch((e) => {
       const error = new AstroError(InvalidImageService);
       error.cause = e;
