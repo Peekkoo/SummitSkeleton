@@ -1,0 +1,16 @@
+{
+  "name": "summitwebsite",
+  "version": "1.0.0",
+  "description": "Summit Website",
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "astro": "^4.0.0"
+  }
+}
